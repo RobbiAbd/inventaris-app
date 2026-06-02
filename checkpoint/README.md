@@ -16,6 +16,12 @@ Contoh: `2026-06-02.md`
 - Catatan teknis / keputusan
 - Tindak lanjut (jika ada)
 
+## Aturan: push GitHub
+
+Setiap kali ada perintah **push ke GitHub**, wajib buat atau perbarui checkpoint hari itu **sebelum** commit & push.
+
+Lihat detail lengkap di [CURSOR.md](../CURSOR.md) → bagian **Git & Workflow → Push ke GitHub → wajib buat checkpoint**.
+
 ## Daftar checkpoint
 
 | Tanggal | File |

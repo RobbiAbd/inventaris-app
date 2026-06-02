@@ -61,6 +61,7 @@ inventaris-pkl/
 │   ├── middleware/         # Middleware server-side
 │   └── utils/              # Helper server (db, auth)
 ├── types/                  # TypeScript types/interfaces
+├── checkpoint/             # Catatan pekerjaan harian (lihat aturan push GitHub)
 ├── .env                    # Environment variables (jangan commit)
 ├── nuxt.config.ts
 ├── app.vue
@@ -304,6 +305,25 @@ Format: `[type]: deskripsi singkat`
 | `chore` | Maintenance |
 
 Contoh: `feat: tambah halaman daftar barang inventaris`
+
+### Push ke GitHub → wajib buat checkpoint
+
+Jika user memerintahkan **push ke GitHub** (mis. "push ke github", "push github"), lakukan **checkpoint dulu**, baru commit & push.
+
+**Urutan wajib:**
+
+1. **Buat atau perbarui checkpoint harian** di `checkpoint/YYYY-MM-DD.md` (tanggal hari ini)
+   - Jika file hari itu sudah ada → **append/perbarui** bagian yang relevan, jangan buat file duplikat
+   - Isi minimal: ringkasan, fitur/perbaikan selesai, file/modul penting, catatan teknis, tindak lanjut
+2. **Perbarui daftar** di `checkpoint/README.md` (tabel tanggal → file)
+3. **Commit** — sertakan checkpoint dalam commit yang sama dengan perubahan kode (jika ada)
+4. **Push** ke remote (`origin/main` kecuali user minta branch lain)
+
+**Catatan:**
+
+- Checkpoint mencatat pekerjaan **sesi/hari itu**, bukan hanya commit message
+- Jangan commit `.env` atau file sensitif
+- Push hanya jika user explicitly meminta
 
 ---
 

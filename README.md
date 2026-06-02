@@ -59,6 +59,14 @@ pnpm preview
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
 
+## Checkpoint & push GitHub
+
+Catatan pekerjaan harian ada di folder [`checkpoint/`](./checkpoint/).
+
+**Aturan:** jika memerintahkan AI assistant (Cursor) untuk **push ke GitHub**, checkpoint hari itu harus dibuat atau diperbarui **dulu**, lalu commit & push (checkpoint ikut dalam commit).
+
+Detail lengkap: [CURSOR.md](./CURSOR.md) → *Git & Workflow → Push ke GitHub → wajib buat checkpoint*.
+
 ## Renovate integration
 
 Install [Renovate GitHub app](https://github.com/apps/renovate/installations/select_target) on your repository and you are good to go.
