@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  HRD
+  KARYAWAN
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  nama         String
+  email        String        @unique
+  password     String
+  role         Role          @default(KARYAWAN)
+  deletedAt    DateTime?     @map("deleted_at")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  barang       Barang[]      @relation("AssignedUser")
+  activityLogs ActivityLog[] @relation("ActivityActor")
+
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model MasterOption {
+  id        Int       @id @default(autoincrement())
+  group     String    @db.VarChar(50)
+  kode      String    @db.VarChar(50)
+  label     String    @db.VarChar(100)
+  config    Json?
+  sortOrder Int       @default(0)
+  isActive  Boolean   @default(true)
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([group, kode])
+  @@index([group, isActive])
+  @@index([deletedAt])
+  @@map("master_options")
+}
+
+model Vendor {
+  id        Int       @id @default(autoincrement())
+  nama      String
+  jenis     String    @db.VarChar(50)
+  kontak    String?
+  telepon   String?
+  email     String?
+  alamat    String?
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  barang    Barang[]
+
+  @@index([deletedAt])
+  @@map("vendors")
+}
+
+model Barang {
+  id               Int       @id @default(autoincrement())
+  nama             String
+  kategori         String    @db.VarChar(50)
+  merk             String?
+  nomorSeri        String?   @unique
+  status           String    @default("BAIK") @db.VarChar(50)
+  tipePerolehan    String    @default("BELI") @db.VarChar(50)
+  tanggalPembelian DateTime?
+  tanggalMulaiSewa DateTime?
+  tanggalAkhirSewa DateTime?
+  lokasi           String?
+  userId           Int?      @map("user_id")
+  vendorId         Int?      @map("vendor_id")
+  deletedAt        DateTime? @map("deleted_at")
+  user             User?     @relation("AssignedUser", fields: [userId], references: [id], onDelete: SetNull)
+  vendor           Vendor?   @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([deletedAt])
+  @@map("barang")
+}
+
+model ActivityLog {
+  id          Int      @id @default(autoincrement())
+  entityType  String   @db.VarChar(30)
+  entityId    Int?
+  entityLabel String   @db.VarChar(200)
+  action      String   @db.VarChar(20)
+  summary     String   @db.VarChar(500)
+  changes     Json?
+  actorId     Int?     @map("actor_id")
+  actorNama   String?  @db.VarChar(100) @map("actor_nama")
+  createdAt   DateTime @default(now()) @map("created_at")
+  actor       User?    @relation("ActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
