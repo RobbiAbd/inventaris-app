@@ -25,7 +25,10 @@ const {
 const toast = useToast()
 
 const { data: usersResponse } = await useAuthenticatedAsyncData('users-select', () => fetchUsers())
-const { data: vendorsResponse, refresh: refreshVendors } = await useAuthenticatedAsyncData('vendors-select', () => fetchVendorList())
+const { data: vendorsResponse, refresh: refreshVendors } = await useAuthenticatedAsyncData(
+  'vendors-select',
+  () => fetchVendorList({ all: true })
+)
 
 interface BarangFormState {
   nama: string
@@ -75,7 +78,7 @@ watch(() => state.kategori, async (kategori) => {
 })
 
 const userItems = computed(() =>
-  (usersResponse.value?.data ?? []).map(user => ({
+  (usersResponse.value?.data.items ?? []).map(user => ({
     label: `${user.nama} (${user.role})`,
     value: user.id
   }))
@@ -86,7 +89,7 @@ const vendorItems = computed(() => {
     optionsFor(GROUPS.KATEGORI_BARANG, false),
     state.kategori
   )
-  const vendors = vendorsResponse.value?.data ?? []
+  const vendors = vendorsResponse.value?.data.items ?? []
   const filtered = jenisKode
     ? vendors.filter(v => v.jenis === jenisKode || v.jenis === 'LAINNYA')
     : vendors

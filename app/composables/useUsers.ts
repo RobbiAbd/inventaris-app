@@ -1,9 +1,10 @@
 import type { UserInput, UserItem, UserUpdateInput } from '../../shared/types/user'
+import type { PaginatedResult } from '../../shared/types/pagination'
 
 interface UserListResponse {
   success: boolean
   message: string
-  data: UserItem[]
+  data: PaginatedResult<UserItem>
 }
 
 interface UserDetailResponse {
@@ -13,8 +14,19 @@ interface UserDetailResponse {
 }
 
 export function useUsers() {
-  async function fetchUserList(params: { search?: string } = {}) {
-    return $fetch<UserListResponse>('/api/users', { query: params })
+  async function fetchUserList(params: {
+    page?: number
+    limit?: number
+    search?: string
+    role?: string
+    all?: boolean
+  } = {}) {
+    return $fetch<UserListResponse>('/api/users', {
+      query: {
+        ...params,
+        ...(params.all && { all: 'true' })
+      }
+    })
   }
 
   async function fetchUser(id: number) {

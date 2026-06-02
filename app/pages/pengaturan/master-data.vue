@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { MasterGroup, MasterOptionInput } from '../../../shared/types/master'
 import { MASTER_GROUP_LABELS } from '../../../shared/types/master'
-import { FILTER_NONE, fromOptionalKode, toOptionalKode } from '../../../shared/constants/filter'
+import { FILTER_ALL, FILTER_NONE, fromOptionalKode, toOptionalKode } from '../../../shared/constants/filter'
+import { DEFAULT_PAGE_SIZE } from '../../../shared/types/pagination'
+import type { PaginationMeta } from '../../../shared/types/pagination'
 
 definePageMeta({ layout: 'default', middleware: 'hrd' })
 
@@ -23,6 +25,12 @@ const activeGroup = ref<MasterGroup>(MASTER_GROUPS.JENIS_VENDOR)
 const showModal = ref(false)
 const editingId = ref<number | null>(null)
 const saving = ref(false)
+const search = ref('')
+const statusFilter = ref(FILTER_ALL)
+const page = ref(1)
+
+const STATUS_ACTIVE = 'active'
+const STATUS_INACTIVE = 'inactive'
 
 const form = reactive({
   kode: '',
@@ -43,6 +51,53 @@ const groupTabs = computed(() =>
 )
 
 const currentItems = computed(() => optionsFor(activeGroup.value, false))
+
+const statusFilterItems = computed(() => [
+  { label: 'Semua Status', value: FILTER_ALL },
+  { label: 'Aktif', value: STATUS_ACTIVE },
+  { label: 'Nonaktif', value: STATUS_INACTIVE }
+])
+
+const filteredItems = computed(() => {
+  const query = search.value.trim().toLowerCase()
+  return currentItems.value.filter((item) => {
+    const matchesSearch = !query
+      || item.label.toLowerCase().includes(query)
+      || item.kode.toLowerCase().includes(query)
+    const matchesStatus = statusFilter.value === FILTER_ALL
+      || (statusFilter.value === STATUS_ACTIVE && item.isActive)
+      || (statusFilter.value === STATUS_INACTIVE && !item.isActive)
+    return matchesSearch && matchesStatus
+  })
+})
+
+const pagination = computed<PaginationMeta>(() => {
+  const total = filteredItems.value.length
+  const totalPages = Math.max(Math.ceil(total / DEFAULT_PAGE_SIZE), 1)
+  const currentPage = Math.min(page.value, totalPages)
+  return {
+    page: currentPage,
+    limit: DEFAULT_PAGE_SIZE,
+    total,
+    totalPages
+  }
+})
+
+const paginatedItems = computed(() => {
+  const { page: currentPage, limit } = pagination.value
+  const start = (currentPage - 1) * limit
+  return filteredItems.value.slice(start, start + limit)
+})
+
+watch(activeGroup, () => {
+  search.value = ''
+  statusFilter.value = FILTER_ALL
+  page.value = 1
+})
+
+function applyFilters() {
+  page.value = 1
+}
 
 const jenisVendorItems = computed(() => [
   { label: 'Tidak dibatasi (semua vendor)', value: FILTER_NONE },
@@ -168,17 +223,31 @@ async function remove(id: number) {
 
       <UTabs v-model="activeGroup" :items="groupTabs" />
 
+      <UCard :ui="{ root: 'overflow-visible relative z-10' }">
+        <div class="grid gap-3 sm:grid-cols-3 mb-4">
+          <UInput
+            v-model="search"
+            icon="i-lucide-search"
+            placeholder="Cari label atau kode..."
+            @keyup.enter="applyFilters"
+          />
+          <AppFilterSelect v-model="statusFilter" :items="statusFilterItems" placeholder="Filter status" />
+          <UButton label="Terapkan Filter" block @click="applyFilters" />
+        </div>
+      </UCard>
+
       <UCard :ui="{ body: 'p-0 sm:p-0' }">
         <div v-if="pending" class="p-8 text-center text-muted">Memuat...</div>
-        <div v-else-if="currentItems.length === 0" class="p-8 text-center text-muted">
-          Belum ada data. Klik Tambah untuk mengisi.
+        <div v-else-if="filteredItems.length === 0" class="p-8 text-center text-muted">
+          {{ currentItems.length === 0 ? 'Belum ada data. Klik Tambah untuk mengisi.' : 'Tidak ada data sesuai filter.' }}
         </div>
-        <div v-else class="divide-y divide-default">
-          <div
-            v-for="item in currentItems"
-            :key="item.id"
-            class="flex items-center justify-between gap-4 p-4"
-          >
+        <template v-else>
+          <div class="divide-y divide-default">
+            <div
+              v-for="item in paginatedItems"
+              :key="item.id"
+              class="flex items-center justify-between gap-4 p-4"
+            >
             <div>
               <div class="flex items-center gap-2">
                 <p class="font-medium">{{ item.label }}</p>
@@ -193,8 +262,15 @@ async function remove(id: number) {
               <UButton size="sm" variant="ghost" icon="i-lucide-pencil" @click="openEdit(item)" />
               <UButton size="sm" variant="ghost" color="error" icon="i-lucide-trash-2" @click="remove(item.id)" />
             </div>
+            </div>
           </div>
-        </div>
+
+          <AppTablePagination
+            v-model:page="page"
+            :pagination="pagination"
+            label="opsi"
+          />
+        </template>
       </UCard>
     </div>
 

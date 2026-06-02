@@ -1,9 +1,10 @@
 import type { VendorInput, VendorItem } from '../../shared/types/vendor'
+import type { PaginatedResult } from '../../shared/types/pagination'
 
 interface VendorListResponse {
   success: boolean
   message: string
-  data: VendorItem[]
+  data: PaginatedResult<VendorItem>
 }
 
 interface VendorDetailResponse {
@@ -14,10 +15,18 @@ interface VendorDetailResponse {
 
 export function useVendor() {
   async function fetchVendorList(params: {
+    page?: number
+    limit?: number
     jenis?: string
     search?: string
+    all?: boolean
   } = {}) {
-    return $fetch<VendorListResponse>('/api/vendor', { query: params })
+    return $fetch<VendorListResponse>('/api/vendor', {
+      query: {
+        ...params,
+        ...(params.all && { all: 'true' })
+      }
+    })
   }
 
   async function fetchVendor(id: number) {

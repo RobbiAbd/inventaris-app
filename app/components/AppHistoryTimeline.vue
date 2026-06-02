@@ -24,8 +24,12 @@ const { data, pending, refresh } = await useAuthenticatedAsyncData(
     page: page.value,
     limit: props.limit
   }),
-  { watch: [page] }
+  { watch: [page, () => props.entityType, () => props.entityId] }
 )
+
+watch([() => props.entityType, () => props.entityId], () => {
+  page.value = 1
+})
 
 const items = computed(() => data.value?.data.items ?? [])
 const pagination = computed(() => data.value?.data.pagination)
@@ -102,10 +106,14 @@ defineExpose({ refresh })
       </div>
 
       <div
-        v-if="pagination && pagination.totalPages > 1"
-        class="flex justify-center pt-2"
+        v-if="pagination"
+        class="pt-2"
       >
-        <UPagination v-model:page="page" :total="pagination.total" :items-per-page="pagination.limit" />
+        <AppTablePagination
+          v-model:page="page"
+          :pagination="pagination"
+          label="riwayat"
+        />
       </div>
     </div>
   </UCard>

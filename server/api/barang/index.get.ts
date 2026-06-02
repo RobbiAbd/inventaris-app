@@ -3,14 +3,14 @@ import { prisma } from '../../utils/db'
 import { barangScopeForUser, requireSession } from '../../utils/auth'
 import { barangInclude, serializeBarang } from '../../utils/barang'
 import { notDeleted } from '../../utils/softDelete'
+import { buildPagination, parsePagination } from '../../utils/pagination'
 import { successResponse } from '../../utils/response'
 
 export default defineEventHandler(async (event) => {
   const user = await requireSession(event)
 
   const query = getQuery(event)
-  const page = Math.max(Number(query.page) || 1, 1)
-  const limit = Math.min(Math.max(Number(query.limit) || 10, 1), 50)
+  const { page, limit, skip } = parsePagination(query)
   const search = (query.search as string)?.trim()
   const kategori = (query.kategori as string)?.trim()
   const status = (query.status as string | undefined)?.trim()
@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
       where,
       include: barangInclude,
       orderBy: { updatedAt: 'desc' },
-      skip: (page - 1) * limit,
+      skip,
       take: limit
     }),
     prisma.barang.count({ where })
@@ -44,11 +44,6 @@ export default defineEventHandler(async (event) => {
 
   return successResponse('Data barang berhasil diambil', {
     items: items.map(serializeBarang),
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit)
-    }
+    pagination: buildPagination(page, limit, total)
   })
 })

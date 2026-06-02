@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { FILTER_ALL, toFilterValue } from '../../../shared/constants/filter'
+import { DEFAULT_PAGE_SIZE } from '../../../shared/types/pagination'
 
 definePageMeta({ layout: 'default' })
 
@@ -22,7 +23,7 @@ const { data, pending, refresh } = await useAuthenticatedAsyncData(
   'barang-list',
   () => fetchBarangList({
     page: page.value,
-    limit: 10,
+    limit: DEFAULT_PAGE_SIZE,
     search: search.value || undefined,
     kategori: toFilterValue(kategori.value),
     status: toFilterValue(status.value)
@@ -94,67 +95,68 @@ const columns = [
           <UButton v-if="isHrd" to="/barang/tambah" class="mt-4" label="Tambah Barang Pertama" />
         </div>
 
-        <UTable v-else :data="items" :columns="columns" class="w-full">
-          <template #kategori-cell="{ row }">
-            {{ labelFor(MASTER_GROUPS.KATEGORI_BARANG, row.original.kategori) }}
-          </template>
+        <template v-else>
+          <UTable :data="items" :columns="columns" class="w-full">
+            <template #kategori-cell="{ row }">
+              {{ labelFor(MASTER_GROUPS.KATEGORI_BARANG, row.original.kategori) }}
+            </template>
 
-          <template #tipePerolehan-cell="{ row }">
-            <UBadge
-              :color="row.original.tipePerolehan === 'SEWA' ? 'info' : 'neutral'"
-              variant="subtle"
-              :label="labelFor(MASTER_GROUPS.TIPE_PEROLEHAN, row.original.tipePerolehan)"
-            />
-          </template>
-
-          <template #status-cell="{ row }">
-            <UBadge
-              :color="statusColor(row.original.status)"
-              variant="subtle"
-              :label="labelFor(MASTER_GROUPS.STATUS_BARANG, row.original.status)"
-            />
-          </template>
-
-          <template #vendor-cell="{ row }">
-            <span v-if="row.original.vendor">{{ row.original.vendor.nama }}</span>
-            <span v-else class="text-muted">-</span>
-          </template>
-
-          <template #user-cell="{ row }">
-            <span v-if="row.original.user">{{ row.original.user.nama }}</span>
-            <UBadge v-else color="neutral" variant="subtle" label="Belum ditugaskan" />
-          </template>
-
-          <template #actions-cell="{ row }">
-            <div class="flex gap-1">
-              <UButton
-                :to="`/barang/${row.original.id}`"
-                size="sm"
-                color="neutral"
-                variant="ghost"
-                icon="i-lucide-eye"
-                label="Detail"
+            <template #tipePerolehan-cell="{ row }">
+              <UBadge
+                :color="row.original.tipePerolehan === 'SEWA' ? 'info' : 'neutral'"
+                variant="subtle"
+                :label="labelFor(MASTER_GROUPS.TIPE_PEROLEHAN, row.original.tipePerolehan)"
               />
-              <UButton
-                v-if="isHrd"
-                :to="`/barang/${row.original.id}/edit`"
-                size="sm"
-                color="neutral"
-                variant="ghost"
-                icon="i-lucide-pencil"
-                label="Edit"
-              />
-            </div>
-          </template>
-        </UTable>
+            </template>
 
-        <div
-          v-if="pagination && pagination.totalPages > 1"
-          class="flex items-center justify-between p-4 border-t border-default"
-        >
-          <p class="text-sm text-muted">Total {{ pagination.total }} barang</p>
-          <UPagination v-model:page="page" :total="pagination.total" :items-per-page="pagination.limit" />
-        </div>
+            <template #status-cell="{ row }">
+              <UBadge
+                :color="statusColor(row.original.status)"
+                variant="subtle"
+                :label="labelFor(MASTER_GROUPS.STATUS_BARANG, row.original.status)"
+              />
+            </template>
+
+            <template #vendor-cell="{ row }">
+              <span v-if="row.original.vendor">{{ row.original.vendor.nama }}</span>
+              <span v-else class="text-muted">-</span>
+            </template>
+
+            <template #user-cell="{ row }">
+              <span v-if="row.original.user">{{ row.original.user.nama }}</span>
+              <UBadge v-else color="neutral" variant="subtle" label="Belum ditugaskan" />
+            </template>
+
+            <template #actions-cell="{ row }">
+              <div class="flex gap-1">
+                <UButton
+                  :to="`/barang/${row.original.id}`"
+                  size="sm"
+                  color="neutral"
+                  variant="ghost"
+                  icon="i-lucide-eye"
+                  label="Detail"
+                />
+                <UButton
+                  v-if="isHrd"
+                  :to="`/barang/${row.original.id}/edit`"
+                  size="sm"
+                  color="neutral"
+                  variant="ghost"
+                  icon="i-lucide-pencil"
+                  label="Edit"
+                />
+              </div>
+            </template>
+          </UTable>
+
+          <AppTablePagination
+            v-if="pagination"
+            v-model:page="page"
+            :pagination="pagination"
+            label="barang"
+          />
+        </template>
       </UCard>
     </div>
   </AppDashboardPanel>

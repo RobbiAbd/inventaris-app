@@ -56,8 +56,10 @@ export function useBarang() {
   async function fetchUsers() {
     return $fetch<{
       success: boolean
-      data: Array<{ id: number, nama: string, email: string, role: string }>
-    }>('/api/users')
+      data: {
+        items: Array<{ id: number, nama: string, email: string, role: string }>
+      }
+    }>('/api/users', { query: { all: 'true' } })
   }
 
   return {
