@@ -26,6 +26,7 @@ export function parseBarangInput(data: BarangInput) {
       : null,
     lokasi: data.lokasi || null,
     harga: data.harga != null ? data.harga : null,
+    quantity: data.quantity ?? 1,
     keterangan: data.keterangan?.trim() || null,
     userId: data.userId ?? null,
     vendorId: isSewa ? (data.vendorId ?? null) : null
@@ -45,6 +46,7 @@ export function serializeBarang(barang: {
   tanggalAkhirSewa: Date | null
   lokasi: string | null
   harga: { toString(): string } | null
+  quantity: number
   keterangan: string | null
   userId: number | null
   vendorId: number | null
@@ -84,6 +86,7 @@ export function serializeBarang(barang: {
     tanggalAkhirSewa: barang.tanggalAkhirSewa?.toISOString() ?? null,
     lokasi: barang.lokasi,
     harga: barang.harga?.toString() ?? null,
+    quantity: barang.quantity,
     keterangan: barang.keterangan,
     userId: barang.userId,
     vendorId: barang.vendorId,

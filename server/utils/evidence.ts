@@ -6,6 +6,8 @@ import {
   EVIDENCE_MAX_FILE_SIZE
 } from '../../shared/constants/evidence'
 
+export type EvidenceUploadKind = 'barang' | 'perbaikan'
+
 const MIME_EXTENSION: Record<string, string> = {
   'image/jpeg': '.jpg',
   'image/png': '.png',
@@ -13,8 +15,8 @@ const MIME_EXTENSION: Record<string, string> = {
   'image/gif': '.gif'
 }
 
-export function getUploadsRoot() {
-  return join(process.cwd(), 'public', 'uploads', 'barang')
+export function getUploadsRoot(kind: EvidenceUploadKind, entityId: number) {
+  return join(process.cwd(), 'public', 'uploads', kind, String(entityId))
 }
 
 export function evidencePublicUrl(filePath: string) {
@@ -23,6 +25,26 @@ export function evidencePublicUrl(filePath: string) {
 
 export function evidenceAbsolutePath(filePath: string) {
   return join(process.cwd(), 'public', filePath)
+}
+
+export function serializeEvidenceRecord(evidence: {
+  id: number
+  filePath: string
+  originalName: string
+  mimeType: string
+  fileSize: number
+  sortOrder: number
+  createdAt: Date
+}) {
+  return {
+    id: evidence.id,
+    url: evidencePublicUrl(evidence.filePath),
+    originalName: evidence.originalName,
+    mimeType: evidence.mimeType,
+    fileSize: evidence.fileSize,
+    sortOrder: evidence.sortOrder,
+    createdAt: evidence.createdAt.toISOString()
+  }
 }
 
 export function validateEvidenceFile(part: { type?: string, data?: Buffer }) {
@@ -52,16 +74,17 @@ export function validateEvidenceFile(part: { type?: string, data?: Buffer }) {
 }
 
 export async function saveEvidenceFile(
-  barangId: number,
+  kind: EvidenceUploadKind,
+  entityId: number,
   part: { filename?: string | null, type?: string, data?: Buffer }
 ) {
   const { mimeType, size } = validateEvidenceFile(part)
   const extension = MIME_EXTENSION[mimeType] ?? (extname(part.filename ?? '') || '.jpg')
   const storedName = `${randomUUID()}${extension}`
-  const relativePath = join('uploads', 'barang', String(barangId), storedName).replace(/\\/g, '/')
+  const relativePath = join('uploads', kind, String(entityId), storedName).replace(/\\/g, '/')
   const absolutePath = evidenceAbsolutePath(relativePath)
 
-  await mkdir(join(getUploadsRoot(), String(barangId)), { recursive: true })
+  await mkdir(getUploadsRoot(kind, entityId), { recursive: true })
   await writeFile(absolutePath, part.data!)
 
   return {

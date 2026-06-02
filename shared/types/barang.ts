@@ -2,6 +2,8 @@ import { z } from 'zod'
 import type { MasterOptionItem } from './master'
 import { getKategoriConfig } from './master'
 
+import type { EvidenceItem } from './evidence'
+
 export interface BarangInput {
   nama: string
   kategori: string
@@ -14,20 +16,13 @@ export interface BarangInput {
   tanggalAkhirSewa?: string
   lokasi?: string
   harga?: number
+  quantity?: number
   keterangan?: string
   userId?: number
   vendorId?: number
 }
 
-export interface BarangEvidenceItem {
-  id: number
-  url: string
-  originalName: string
-  mimeType: string
-  fileSize: number
-  sortOrder: number
-  createdAt: string
-}
+export type BarangEvidenceItem = EvidenceItem
 
 export interface BarangSubmitPayload {
   data: BarangInput
@@ -48,6 +43,7 @@ export interface BarangItem {
   tanggalAkhirSewa: string | null
   lokasi: string | null
   harga: string | null
+  quantity: number
   keterangan: string | null
   userId: number | null
   vendorId: number | null
@@ -97,6 +93,7 @@ export function buildBarangSchema(
       val => (val === '' || val === null || val === undefined ? undefined : val),
       z.coerce.number().nonnegative('Harga tidak boleh negatif').optional()
     ),
+    quantity: z.coerce.number().int('Quantity harus bilangan bulat').min(1, 'Quantity minimal 1').default(1),
     keterangan: z.string().max(5000, 'Keterangan maksimal 5000 karakter').optional(),
     userId: z.coerce.number().int().positive().optional(),
     vendorId: z.coerce.number().int().positive().optional()

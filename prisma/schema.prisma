@@ -79,6 +79,7 @@ model Barang {
   tanggalAkhirSewa DateTime?
   lokasi           String?
   harga            Decimal?         @db.Decimal(15, 2)
+  quantity         Int              @default(1)
   keterangan       String?          @db.Text
   userId           Int?             @map("user_id")
   vendorId         Int?             @map("vendor_id")
@@ -125,9 +126,25 @@ model BarangPerbaikan {
   updatedAt      DateTime @updatedAt @map("updated_at")
   barang         Barang   @relation(fields: [barangId], references: [id], onDelete: Cascade)
   createdBy      User?    @relation("PerbaikanCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  evidence       PerbaikanEvidence[]
 
   @@index([barangId, tanggal])
   @@map("barang_perbaikan")
+}
+
+model PerbaikanEvidence {
+  id           Int             @id @default(autoincrement())
+  perbaikanId  Int             @map("perbaikan_id")
+  filePath     String          @map("file_path") @db.VarChar(255)
+  originalName String          @map("original_name") @db.VarChar(255)
+  mimeType     String          @map("mime_type") @db.VarChar(100)
+  fileSize     Int             @map("file_size")
+  sortOrder    Int             @default(0) @map("sort_order")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  perbaikan    BarangPerbaikan @relation(fields: [perbaikanId], references: [id], onDelete: Cascade)
+
+  @@index([perbaikanId])
+  @@map("perbaikan_evidence")
 }
 
 model BarangPengajuan {

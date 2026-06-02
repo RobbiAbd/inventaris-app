@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { EvidenceItem } from './evidence'
 
 export interface PerbaikanItem {
   id: number
@@ -17,6 +18,7 @@ export interface PerbaikanItem {
     id: number
     nama: string
   } | null
+  evidence: EvidenceItem[]
 }
 
 export const perbaikanInputSchema = z.object({

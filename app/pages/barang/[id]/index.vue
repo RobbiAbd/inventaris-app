@@ -127,6 +127,10 @@ async function confirmDelete() {
             <p class="text-sm text-muted">Harga</p>
             <p class="font-medium mt-1">{{ formatRupiah(barang.harga) }}</p>
           </div>
+          <div>
+            <p class="text-sm text-muted">Quantity</p>
+            <p class="font-medium mt-1">{{ barang.quantity }}</p>
+          </div>
           <div class="sm:col-span-2">
             <p class="text-sm text-muted">Keterangan</p>
             <p class="font-medium mt-1 whitespace-pre-wrap">{{ barang.keterangan || '-' }}</p>

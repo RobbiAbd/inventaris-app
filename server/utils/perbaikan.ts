@@ -1,5 +1,7 @@
 import type { PerbaikanInput } from '../../shared/types/perbaikan'
+import type { Prisma } from '@prisma/client'
 import { prisma } from './db'
+import { serializePerbaikanEvidence } from './perbaikanEvidence'
 
 export function serializePerbaikan(record: {
   id: number
@@ -15,6 +17,15 @@ export function serializePerbaikan(record: {
   createdAt: Date
   updatedAt: Date
   createdBy?: { id: number, nama: string } | null
+  evidence?: Array<{
+    id: number
+    filePath: string
+    originalName: string
+    mimeType: string
+    fileSize: number
+    sortOrder: number
+    createdAt: Date
+  }>
 }) {
   return {
     id: record.id,
@@ -29,7 +40,8 @@ export function serializePerbaikan(record: {
     createdById: record.createdById,
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
-    createdBy: record.createdBy ?? null
+    createdBy: record.createdBy ?? null,
+    evidence: (record.evidence ?? []).map(serializePerbaikanEvidence)
   }
 }
 
@@ -48,8 +60,11 @@ export function parsePerbaikanInput(data: PerbaikanInput, statusSebelum?: string
 export const perbaikanInclude = {
   createdBy: {
     select: { id: true, nama: true }
+  },
+  evidence: {
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }]
   }
-} as const
+} satisfies Prisma.BarangPerbaikanInclude
 
 export async function listBarangPerbaikan(barangId: number) {
   const items = await prisma.barangPerbaikan.findMany({

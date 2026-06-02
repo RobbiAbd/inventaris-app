@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import type { BarangEvidenceItem } from '../../shared/types/barang'
+import type { EvidenceItem } from '../../shared/types/evidence'
 import { EVIDENCE_ALLOWED_MIME_TYPES, EVIDENCE_MAX_FILES, EVIDENCE_MAX_FILE_SIZE } from '../../shared/constants/evidence'
 
-const props = defineProps<{
-  existing?: BarangEvidenceItem[]
+const props = withDefaults(defineProps<{
+  existing?: EvidenceItem[]
   disabled?: boolean
-}>()
+  title?: string
+  description?: string
+}>(), {
+  title: 'Evidence Gambar',
+  description: 'Unggah foto bukti kondisi barang. Maks. 10 gambar, 5 MB per file (JPEG, PNG, WebP, GIF).'
+})
 
 const toast = useToast()
 const fileInputRef = ref<HTMLInputElement | null>(null)
@@ -111,9 +116,9 @@ onBeforeUnmount(revokePreviews)
   <div class="space-y-4">
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div class="min-w-0 flex-1">
-        <h3 class="font-medium">Evidence Gambar</h3>
+        <h3 class="font-medium">{{ title }}</h3>
         <p class="text-sm text-muted mt-1">
-          Unggah foto bukti kondisi barang. Maks. {{ EVIDENCE_MAX_FILES }} gambar, 5 MB per file (JPEG, PNG, WebP, GIF).
+          {{ description }}
         </p>
       </div>
       <p class="text-sm text-muted shrink-0">{{ totalCount }} / {{ EVIDENCE_MAX_FILES }} gambar</p>

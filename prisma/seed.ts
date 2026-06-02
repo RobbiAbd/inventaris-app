@@ -82,12 +82,12 @@ async function main() {
   }
 
   const barangSamples = [
-    { nama: 'Laptop Dell Latitude', kategori: 'LAPTOP', merk: 'Dell', nomorSeri: 'DL-LAT-001', status: 'BAIK', tipePerolehan: 'BELI', lokasi: 'Ruang HRD', harga: 12500000, tanggalPembelian: new Date('2023-01-15'), userId: seededUsers['hrd@inventaris.local'] },
-    { nama: 'Printer Canon', kategori: 'ELEKTRONIK', merk: 'Canon', nomorSeri: 'CN-PR-002', status: 'DALAM_PERBAIKAN', tipePerolehan: 'BELI', lokasi: 'Ruang Admin', harga: 3500000, tanggalPembelian: new Date('2022-06-10'), userId: seededUsers['karyawan@inventaris.local'] },
+    { nama: 'Laptop Dell Latitude', kategori: 'LAPTOP', merk: 'Dell', nomorSeri: 'DL-LAT-001', status: 'BAIK', tipePerolehan: 'BELI', lokasi: 'Ruang HRD', harga: 12500000, quantity: 1, tanggalPembelian: new Date('2023-01-15'), userId: seededUsers['hrd@inventaris.local'] },
+    { nama: 'Printer Canon', kategori: 'ELEKTRONIK', merk: 'Canon', nomorSeri: 'CN-PR-002', status: 'DALAM_PERBAIKAN', tipePerolehan: 'BELI', lokasi: 'Ruang Admin', harga: 3500000, quantity: 1, tanggalPembelian: new Date('2022-06-10'), userId: seededUsers['karyawan@inventaris.local'] },
     { nama: 'Galon Isi Ulang 19L', kategori: 'GALON', merk: 'Aqua', status: 'BAIK', tipePerolehan: 'SEWA', lokasi: 'Pantry', tanggalMulaiSewa: new Date('2024-01-01'), vendorId: seededVendors['Aqua Galon Delivery'] },
     { nama: 'Supir Dinar', kategori: 'SUPIR', status: 'BAIK', tipePerolehan: 'SEWA', lokasi: 'Operasional', tanggalMulaiSewa: new Date('2024-06-01'), vendorId: seededVendors['PT Sopir Profesional'] },
     { nama: 'Mobil Dinas Avanza', kategori: 'KENDARAAN', merk: 'Toyota', nomorSeri: 'B 1234 XYZ', status: 'BAIK', tipePerolehan: 'SEWA', lokasi: 'Parkir', tanggalMulaiSewa: new Date('2024-03-01'), tanggalAkhirSewa: new Date('2025-03-01'), vendorId: seededVendors['CV Rental Mobil Jaya'], userId: seededUsers['hrd@inventaris.local'] },
-    { nama: 'Meja Kerja', kategori: 'FURNITURE', merk: 'Informa', nomorSeri: 'FN-MK-003', status: 'BAIK', tipePerolehan: 'BELI', lokasi: 'Open Space', harga: 1800000, tanggalPembelian: new Date('2021-03-20') }
+    { nama: 'Meja Kerja', kategori: 'FURNITURE', merk: 'Informa', nomorSeri: 'FN-MK-003', status: 'BAIK', tipePerolehan: 'BELI', lokasi: 'Open Space', harga: 1800000, quantity: 12, tanggalPembelian: new Date('2021-03-20') }
   ]
 
   for (const sample of barangSamples) {

@@ -45,6 +45,7 @@ interface BarangFormState {
   tanggalAkhirSewa?: string
   lokasi: string
   harga?: number
+  quantity: number
   keterangan: string
   userId?: number
   vendorId?: number
@@ -62,6 +63,7 @@ const state = reactive<BarangFormState>({
   tanggalAkhirSewa: props.initialData?.tanggalAkhirSewa?.slice(0, 10),
   lokasi: props.initialData?.lokasi ?? '',
   harga: props.initialData?.harga ? Number(props.initialData.harga) : undefined,
+  quantity: props.initialData?.quantity ?? 1,
   keterangan: props.initialData?.keterangan ?? '',
   userId: props.initialData?.userId ?? undefined,
   vendorId: props.initialData?.vendorId ?? undefined
@@ -175,6 +177,10 @@ function onSubmit() {
               class="w-full"
               @update:model-value="onHargaInput"
             />
+          </UFormField>
+
+          <UFormField label="Quantity" name="quantity" required help="Jumlah unit barang">
+            <UInput v-model.number="state.quantity" type="number" min="1" step="1" class="w-full" />
           </UFormField>
 
           <UFormField label="Keterangan" name="keterangan" class="sm:col-span-2">

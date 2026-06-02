@@ -14,5 +14,14 @@ export function usePerbaikan() {
     )
   }
 
-  return { fetchPerbaikanList, createPerbaikan }
+  async function uploadPerbaikanEvidence(barangId: number, perbaikanId: number, files: File[]) {
+    const formData = new FormData()
+    files.forEach(file => formData.append('files', file))
+    return $fetch<{ success: boolean, data: PerbaikanItem['evidence'] }>(
+      `/api/barang/${barangId}/perbaikan/${perbaikanId}/evidence`,
+      { method: 'POST', body: formData }
+    )
+  }
+
+  return { fetchPerbaikanList, createPerbaikan, uploadPerbaikanEvidence }
 }

@@ -66,6 +66,7 @@ const exportFilters = computed(() => ({
 const columns = [
   { accessorKey: 'nama', header: 'Nama' },
   { accessorKey: 'kategori', header: 'Kategori' },
+  { accessorKey: 'quantity', header: 'Qty' },
   { accessorKey: 'harga', header: 'Harga' },
   { accessorKey: 'tipePerolehan', header: 'Perolehan' },
   { accessorKey: 'status', header: 'Status' },
@@ -110,6 +111,10 @@ const columns = [
           <UTable :data="items" :columns="columns" class="w-full">
             <template #kategori-cell="{ row }">
               {{ labelFor(MASTER_GROUPS.KATEGORI_BARANG, row.original.kategori) }}
+            </template>
+
+            <template #quantity-cell="{ row }">
+              {{ row.original.quantity }}
             </template>
 
             <template #harga-cell="{ row }">

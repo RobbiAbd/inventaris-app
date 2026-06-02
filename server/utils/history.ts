@@ -205,6 +205,7 @@ const BARANG_FIELDS: FieldConfig[] = [
   { key: 'tanggalAkhirSewa', label: 'Tanggal Akhir Sewa' },
   { key: 'lokasi', label: 'Lokasi' },
   { key: 'harga', label: 'Harga' },
+  { key: 'quantity', label: 'Quantity' },
   { key: 'keterangan', label: 'Keterangan' },
   { key: 'userId', label: 'Ditugaskan ke' },
   { key: 'vendorId', label: 'Vendor' }

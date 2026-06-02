@@ -1,27 +1,9 @@
 import { prisma } from './db'
 import { EVIDENCE_MAX_FILES } from '../../shared/constants/evidence'
-import { deleteEvidenceFile, saveEvidenceFile } from './evidence'
+import { deleteEvidenceFile, saveEvidenceFile, serializeEvidenceRecord } from './evidence'
 import { notDeleted } from './softDelete'
 
-export function serializeBarangEvidence(evidence: {
-  id: number
-  filePath: string
-  originalName: string
-  mimeType: string
-  fileSize: number
-  sortOrder: number
-  createdAt: Date
-}) {
-  return {
-    id: evidence.id,
-    url: `/${evidence.filePath.replace(/\\/g, '/')}`,
-    originalName: evidence.originalName,
-    mimeType: evidence.mimeType,
-    fileSize: evidence.fileSize,
-    sortOrder: evidence.sortOrder,
-    createdAt: evidence.createdAt.toISOString()
-  }
-}
+export const serializeBarangEvidence = serializeEvidenceRecord
 
 export async function countBarangEvidence(barangId: number) {
   return prisma.barangEvidence.count({ where: { barangId } })
@@ -47,7 +29,7 @@ export async function uploadBarangEvidence(
   const created = []
 
   for (const [index, part] of parts.entries()) {
-    const saved = await saveEvidenceFile(barangId, part)
+    const saved = await saveEvidenceFile('barang', barangId, part)
     const record = await prisma.barangEvidence.create({
       data: {
         barangId,

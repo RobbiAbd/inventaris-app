@@ -9,12 +9,16 @@ const props = defineProps<{
   isHrd?: boolean
 }>()
 
-const { fetchPerbaikanList, createPerbaikan } = usePerbaikan()
+const { fetchPerbaikanList, createPerbaikan, uploadPerbaikanEvidence } = usePerbaikan()
 const { labelFor, toSelectItems, MASTER_GROUPS: GROUPS } = useMasterOptions()
 const toast = useToast()
 
 const showModal = ref(false)
 const saving = ref(false)
+const evidenceFieldRef = ref<{
+  getPayload: () => { newEvidenceFiles?: File[] }
+  reset: () => void
+} | null>(null)
 
 const form = reactive<PerbaikanInput>({
   tanggal: new Date().toISOString().slice(0, 10),
@@ -31,6 +35,17 @@ function onBiayaInput(raw: string) {
   const parsed = parseCurrencyInput(raw)
   biayaDisplay.value = formatCurrencyInput(parsed)
   form.biaya = parsed
+}
+
+function resetForm() {
+  form.tanggal = new Date().toISOString().slice(0, 10)
+  form.deskripsi = ''
+  form.biaya = undefined
+  biayaDisplay.value = ''
+  form.lokasiServis = ''
+  form.statusSesudah = props.barangStatus
+  form.catatan = ''
+  evidenceFieldRef.value?.reset()
 }
 
 const { data, pending, refresh } = await useAuthenticatedAsyncData(
@@ -50,16 +65,23 @@ function formatDate(value: string) {
 }
 
 async function save() {
+  if (!form.deskripsi.trim()) {
+    toast.add({ title: 'Validasi gagal', description: 'Deskripsi wajib diisi', color: 'error' })
+    return
+  }
+
   saving.value = true
   try {
-    await createPerbaikan(props.barangId, form)
+    const response = await createPerbaikan(props.barangId, form)
+    const newFiles = evidenceFieldRef.value?.getPayload().newEvidenceFiles ?? []
+
+    if (newFiles.length) {
+      await uploadPerbaikanEvidence(props.barangId, response.data.id, newFiles)
+    }
+
     toast.add({ title: 'Berhasil', description: 'Riwayat perbaikan ditambahkan', color: 'success' })
     showModal.value = false
-    form.deskripsi = ''
-    form.biaya = undefined
-    biayaDisplay.value = ''
-    form.lokasiServis = ''
-    form.catatan = ''
+    resetForm()
     await refresh()
   } catch (error: unknown) {
     const fetchError = error as { data?: { statusMessage?: string }, statusMessage?: string }
@@ -72,6 +94,12 @@ async function save() {
     saving.value = false
   }
 }
+
+watch(showModal, (open) => {
+  if (open) {
+    form.statusSesudah = props.barangStatus
+  }
+})
 
 defineExpose({ refresh })
 </script>
@@ -131,6 +159,18 @@ defineExpose({ refresh })
           <span>Biaya: {{ formatRupiah(item.biaya) }}</span>
         </div>
         <p v-if="item.catatan" class="text-xs text-muted border-t border-default pt-2">{{ item.catatan }}</p>
+        <div v-if="item.evidence?.length" class="grid gap-2 grid-cols-2 sm:grid-cols-3 pt-2 border-t border-default">
+          <a
+            v-for="evidence in item.evidence"
+            :key="evidence.id"
+            :href="evidence.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="rounded-md border border-default overflow-hidden hover:border-primary transition-colors"
+          >
+            <img :src="evidence.url" :alt="evidence.originalName" class="h-24 w-full object-cover bg-muted/30">
+          </a>
+        </div>
       </div>
     </div>
 
@@ -162,6 +202,11 @@ defineExpose({ refresh })
           <UFormField label="Catatan">
             <UTextarea v-model="form.catatan" :rows="2" class="w-full" />
           </UFormField>
+          <AppBarangEvidenceField
+            ref="evidenceFieldRef"
+            title="Evidence Perbaikan"
+            description="Opsional — unggah foto bukti perbaikan. Maks. 10 gambar, 5 MB per file (JPEG, PNG, WebP, GIF)."
+          />
         </div>
       </template>
       <template #footer>
