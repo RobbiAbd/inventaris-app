@@ -22,6 +22,17 @@ export function formatReportDateTime(value: string | Date | null | undefined) {
   })
 }
 
+export function formatReportRupiah(value: string | number | null | undefined) {
+  if (value == null || value === '') return '-'
+  const amount = typeof value === 'string' ? Number(value) : value
+  if (Number.isNaN(amount)) return '-'
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0
+  }).format(amount)
+}
+
 export function reportFileStamp() {
   return new Date().toISOString().slice(0, 10)
 }

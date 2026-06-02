@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BarangInput } from '../../../../shared/types/barang'
+import type { BarangSubmitPayload } from '../../../../shared/types/barang'
 
 definePageMeta({
   layout: 'default',
@@ -7,7 +7,7 @@ definePageMeta({
 })
 
 const route = useRoute()
-const { fetchBarang, updateBarang } = useBarang()
+const { fetchBarang, updateBarang, syncBarangEvidence } = useBarang()
 const toast = useToast()
 const loading = ref(false)
 
@@ -29,11 +29,12 @@ if (error.value) {
 
 const barang = computed(() => data.value?.data)
 
-async function onSubmit(formData: BarangInput) {
+async function onSubmit(payload: BarangSubmitPayload) {
   loading.value = true
 
   try {
-    await updateBarang(id, formData)
+    await updateBarang(id, payload.data)
+    await syncBarangEvidence(id, payload)
     toast.add({
       title: 'Berhasil',
       description: 'Data barang berhasil diperbarui',

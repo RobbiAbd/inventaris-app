@@ -1,7 +1,9 @@
 import type { BarangInput } from '../../shared/types/barang'
+import type { Prisma } from '@prisma/client'
 import { prisma } from './db'
 import { notDeleted } from './softDelete'
 import { validateVendorExists } from './vendor'
+import { serializeBarangEvidence } from './barangEvidence'
 
 export function parseBarangInput(data: BarangInput) {
   const isSewa = data.tipePerolehan === 'SEWA'
@@ -23,6 +25,8 @@ export function parseBarangInput(data: BarangInput) {
       ? new Date(data.tanggalAkhirSewa)
       : null,
     lokasi: data.lokasi || null,
+    harga: data.harga != null ? data.harga : null,
+    keterangan: data.keterangan?.trim() || null,
     userId: data.userId ?? null,
     vendorId: isSewa ? (data.vendorId ?? null) : null
   }
@@ -40,6 +44,8 @@ export function serializeBarang(barang: {
   tanggalMulaiSewa: Date | null
   tanggalAkhirSewa: Date | null
   lokasi: string | null
+  harga: { toString(): string } | null
+  keterangan: string | null
   userId: number | null
   vendorId: number | null
   createdAt: Date
@@ -55,6 +61,15 @@ export function serializeBarang(barang: {
     jenis: string
     telepon: string | null
   } | null
+  evidence?: Array<{
+    id: number
+    filePath: string
+    originalName: string
+    mimeType: string
+    fileSize: number
+    sortOrder: number
+    createdAt: Date
+  }>
 }) {
   return {
     id: barang.id,
@@ -68,16 +83,19 @@ export function serializeBarang(barang: {
     tanggalMulaiSewa: barang.tanggalMulaiSewa?.toISOString() ?? null,
     tanggalAkhirSewa: barang.tanggalAkhirSewa?.toISOString() ?? null,
     lokasi: barang.lokasi,
+    harga: barang.harga?.toString() ?? null,
+    keterangan: barang.keterangan,
     userId: barang.userId,
     vendorId: barang.vendorId,
     user: barang.user ?? null,
     vendor: barang.vendor ?? null,
+    evidence: (barang.evidence ?? []).map(serializeBarangEvidence),
     createdAt: barang.createdAt.toISOString(),
     updatedAt: barang.updatedAt.toISOString()
   }
 }
 
-export const barangInclude = {
+export const barangListInclude = {
   user: {
     select: {
       id: true,
@@ -93,7 +111,14 @@ export const barangInclude = {
       telepon: true
     }
   }
-} as const
+} satisfies Prisma.BarangInclude
+
+export const barangInclude = {
+  ...barangListInclude,
+  evidence: {
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }]
+  }
+} satisfies Prisma.BarangInclude
 
 export async function validateUserAssignment(userId?: number) {
   if (!userId) return

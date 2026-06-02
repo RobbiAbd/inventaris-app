@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import type { BarangInput, BarangItem } from '../../shared/types/barang'
+import type { BarangInput, BarangItem, BarangSubmitPayload } from '../../shared/types/barang'
 import { getJenisVendorKodeForKategori } from '../../shared/types/vendor'
 import { MASTER_GROUPS } from '../../shared/types/master'
+import { formatCurrencyInput, parseCurrencyInput } from '../../shared/utils/currency'
 
 const props = defineProps<{
   initialData?: BarangItem | null
@@ -9,7 +10,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  submit: [data: BarangInput]
+  submit: [payload: BarangSubmitPayload]
 }>()
 
 const { fetchUsers } = useBarang()
@@ -23,6 +24,8 @@ const {
   MASTER_GROUPS: GROUPS
 } = useMasterOptions()
 const toast = useToast()
+
+const evidenceFieldRef = ref<{ getPayload: () => Pick<BarangSubmitPayload, 'newEvidenceFiles' | 'removeEvidenceIds'> } | null>(null)
 
 const { data: usersResponse } = await useAuthenticatedAsyncData('users-select', () => fetchUsers())
 const { data: vendorsResponse, refresh: refreshVendors } = await useAuthenticatedAsyncData(
@@ -41,6 +44,8 @@ interface BarangFormState {
   tanggalMulaiSewa?: string
   tanggalAkhirSewa?: string
   lokasi: string
+  harga?: number
+  keterangan: string
   userId?: number
   vendorId?: number
 }
@@ -56,9 +61,19 @@ const state = reactive<BarangFormState>({
   tanggalMulaiSewa: props.initialData?.tanggalMulaiSewa?.slice(0, 10),
   tanggalAkhirSewa: props.initialData?.tanggalAkhirSewa?.slice(0, 10),
   lokasi: props.initialData?.lokasi ?? '',
+  harga: props.initialData?.harga ? Number(props.initialData.harga) : undefined,
+  keterangan: props.initialData?.keterangan ?? '',
   userId: props.initialData?.userId ?? undefined,
   vendorId: props.initialData?.vendorId ?? undefined
 })
+
+const hargaDisplay = ref(formatCurrencyInput(state.harga))
+
+function onHargaInput(raw: string) {
+  const parsed = parseCurrencyInput(raw)
+  hargaDisplay.value = formatCurrencyInput(parsed)
+  state.harga = parsed
+}
 
 const kategoriItems = computed(() => toSelectItems(GROUPS.KATEGORI_BARANG))
 const statusItems = computed(() => toSelectItems(GROUPS.STATUS_BARANG))
@@ -112,7 +127,12 @@ function onSubmit() {
     return
   }
 
-  emit('submit', parsed.data)
+  const evidencePayload = evidenceFieldRef.value?.getPayload() ?? {}
+
+  emit('submit', {
+    data: parsed.data,
+    ...evidencePayload
+  })
 }
 </script>
 
@@ -144,6 +164,26 @@ function onSubmit() {
 
           <UFormField label="Lokasi" name="lokasi">
             <UInput v-model="state.lokasi" placeholder="Contoh: Ruang HRD, Gudang" class="w-full" />
+          </UFormField>
+
+          <UFormField label="Harga (Rp)" name="harga" help="Opsional — nilai pembelian atau estimasi harga barang">
+            <UInput
+              :model-value="hargaDisplay"
+              type="text"
+              inputmode="numeric"
+              placeholder="Contoh: 1.000.000"
+              class="w-full"
+              @update:model-value="onHargaInput"
+            />
+          </UFormField>
+
+          <UFormField label="Keterangan" name="keterangan" class="sm:col-span-2">
+            <UTextarea
+              v-model="state.keterangan"
+              placeholder="Catatan bebas tentang kondisi, riwayat, atau hal penting lainnya..."
+              :rows="4"
+              class="w-full"
+            />
           </UFormField>
         </div>
       </div>
@@ -191,6 +231,13 @@ function onSubmit() {
       >
         <USelectMenu v-model="state.userId" :items="userItems" value-key="value" placeholder="Pilih karyawan" class="w-full" />
       </UFormField>
+
+      <USeparator />
+
+      <AppBarangEvidenceField
+        ref="evidenceFieldRef"
+        :existing="initialData?.evidence"
+      />
 
       <div class="flex justify-end gap-2 pt-2">
         <UButton to="/barang" color="neutral" variant="ghost" label="Batal" />

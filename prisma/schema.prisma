@@ -21,8 +21,11 @@ model User {
   deletedAt    DateTime?     @map("deleted_at")
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  barang       Barang[]      @relation("AssignedUser")
-  activityLogs ActivityLog[] @relation("ActivityActor")
+  barang           Barang[]          @relation("AssignedUser")
+  activityLogs     ActivityLog[]     @relation("ActivityActor")
+  perbaikanDibuat  BarangPerbaikan[] @relation("PerbaikanCreator")
+  pengajuanBarang  BarangPengajuan[] @relation("PengajuanUser")
+  pengajuanReview  BarangPengajuan[] @relation("PengajuanReviewer")
 
   @@index([deletedAt])
   @@map("users")
@@ -64,27 +67,90 @@ model Vendor {
 }
 
 model Barang {
-  id               Int       @id @default(autoincrement())
+  id               Int              @id @default(autoincrement())
   nama             String
-  kategori         String    @db.VarChar(50)
+  kategori         String           @db.VarChar(50)
   merk             String?
-  nomorSeri        String?   @unique
-  status           String    @default("BAIK") @db.VarChar(50)
-  tipePerolehan    String    @default("BELI") @db.VarChar(50)
+  nomorSeri        String?          @unique
+  status           String           @default("BAIK") @db.VarChar(50)
+  tipePerolehan    String           @default("BELI") @db.VarChar(50)
   tanggalPembelian DateTime?
   tanggalMulaiSewa DateTime?
   tanggalAkhirSewa DateTime?
   lokasi           String?
-  userId           Int?      @map("user_id")
-  vendorId         Int?      @map("vendor_id")
-  deletedAt        DateTime? @map("deleted_at")
-  user             User?     @relation("AssignedUser", fields: [userId], references: [id], onDelete: SetNull)
-  vendor           Vendor?   @relation(fields: [vendorId], references: [id], onDelete: SetNull)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  harga            Decimal?         @db.Decimal(15, 2)
+  keterangan       String?          @db.Text
+  userId           Int?             @map("user_id")
+  vendorId         Int?             @map("vendor_id")
+  deletedAt        DateTime?        @map("deleted_at")
+  user             User?            @relation("AssignedUser", fields: [userId], references: [id], onDelete: SetNull)
+  vendor           Vendor?          @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  evidence         BarangEvidence[]
+  perbaikan        BarangPerbaikan[]
+  pengajuan        BarangPengajuan[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   @@index([deletedAt])
   @@map("barang")
+}
+
+model BarangEvidence {
+  id           Int      @id @default(autoincrement())
+  barangId     Int      @map("barang_id")
+  filePath     String   @map("file_path") @db.VarChar(255)
+  originalName String   @map("original_name") @db.VarChar(255)
+  mimeType     String   @map("mime_type") @db.VarChar(100)
+  fileSize     Int      @map("file_size")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  barang       Barang   @relation(fields: [barangId], references: [id], onDelete: Cascade)
+
+  @@index([barangId])
+  @@map("barang_evidence")
+}
+
+model BarangPerbaikan {
+  id             Int      @id @default(autoincrement())
+  barangId       Int      @map("barang_id")
+  tanggal        DateTime
+  deskripsi      String   @db.Text
+  biaya          Decimal? @db.Decimal(12, 2)
+  lokasiServis   String?  @map("lokasi_servis")
+  statusSebelum  String?  @map("status_sebelum") @db.VarChar(50)
+  statusSesudah  String?  @map("status_sesudah") @db.VarChar(50)
+  catatan        String?  @db.Text
+  createdById    Int?     @map("created_by_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  barang         Barang   @relation(fields: [barangId], references: [id], onDelete: Cascade)
+  createdBy      User?    @relation("PerbaikanCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([barangId, tanggal])
+  @@map("barang_perbaikan")
+}
+
+model BarangPengajuan {
+  id              Int       @id @default(autoincrement())
+  barangId        Int       @map("barang_id")
+  userId          Int       @map("user_id")
+  jenis           String    @db.VarChar(30)
+  status          String    @default("MENUNGGU") @db.VarChar(20)
+  alasan          String    @db.Text
+  payload         Json?
+  catatanReviewer String?   @map("catatan_reviewer") @db.Text
+  reviewedById    Int?      @map("reviewed_by_id")
+  reviewedAt      DateTime? @map("reviewed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  barang          Barang    @relation(fields: [barangId], references: [id], onDelete: Cascade)
+  user            User      @relation("PengajuanUser", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy      User?     @relation("PengajuanReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([barangId])
+  @@index([userId])
+  @@map("barang_pengajuan")
 }
 
 model ActivityLog {

@@ -13,8 +13,26 @@ export interface BarangInput {
   tanggalMulaiSewa?: string
   tanggalAkhirSewa?: string
   lokasi?: string
+  harga?: number
+  keterangan?: string
   userId?: number
   vendorId?: number
+}
+
+export interface BarangEvidenceItem {
+  id: number
+  url: string
+  originalName: string
+  mimeType: string
+  fileSize: number
+  sortOrder: number
+  createdAt: string
+}
+
+export interface BarangSubmitPayload {
+  data: BarangInput
+  newEvidenceFiles?: File[]
+  removeEvidenceIds?: number[]
 }
 
 export interface BarangItem {
@@ -29,6 +47,8 @@ export interface BarangItem {
   tanggalMulaiSewa: string | null
   tanggalAkhirSewa: string | null
   lokasi: string | null
+  harga: string | null
+  keterangan: string | null
   userId: number | null
   vendorId: number | null
   user: {
@@ -42,6 +62,7 @@ export interface BarangItem {
     jenis: string
     telepon: string | null
   } | null
+  evidence: BarangEvidenceItem[]
   createdAt: string
   updatedAt: string
 }
@@ -72,6 +93,11 @@ export function buildBarangSchema(
     tanggalMulaiSewa: z.string().optional(),
     tanggalAkhirSewa: z.string().optional(),
     lokasi: z.string().optional(),
+    harga: z.preprocess(
+      val => (val === '' || val === null || val === undefined ? undefined : val),
+      z.coerce.number().nonnegative('Harga tidak boleh negatif').optional()
+    ),
+    keterangan: z.string().max(5000, 'Keterangan maksimal 5000 karakter').optional(),
     userId: z.coerce.number().int().positive().optional(),
     vendorId: z.coerce.number().int().positive().optional()
   }).superRefine((data, ctx) => {

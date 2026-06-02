@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client'
 import { prisma } from '../../utils/db'
 import { barangScopeForUser, requireSession } from '../../utils/auth'
-import { barangInclude, serializeBarang } from '../../utils/barang'
+import { barangListInclude, serializeBarang } from '../../utils/barang'
 import { notDeleted } from '../../utils/softDelete'
 import { buildPagination, parsePagination } from '../../utils/pagination'
 import { successResponse } from '../../utils/response'
@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
   const [items, total] = await Promise.all([
     prisma.barang.findMany({
       where,
-      include: barangInclude,
+      include: barangListInclude,
       orderBy: { updatedAt: 'desc' },
       skip,
       take: limit

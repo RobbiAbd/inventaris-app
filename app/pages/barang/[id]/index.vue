@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ENTITY_TYPES } from '../../../../shared/types/history'
+import { formatRupiah } from '../../../../shared/utils/currency'
 
 definePageMeta({ layout: 'default' })
 
@@ -12,7 +13,9 @@ const toast = useToast()
 const id = Number(route.params.id)
 const isHrd = computed(() => user.value?.role === 'HRD')
 const showDeleteModal = ref(false)
+const showPengajuanModal = ref(false)
 const deleting = ref(false)
+const assignedToMe = computed(() => barang.value?.userId === user.value?.id)
 
 useSeoMeta({ title: 'Detail Barang - Inventaris App' })
 
@@ -65,6 +68,14 @@ async function confirmDelete() {
           <UButton to="/barang" icon="i-lucide-arrow-left" color="neutral" variant="ghost" />
         </template>
         <template #right>
+          <UButton
+            v-if="!isHrd && assignedToMe"
+            icon="i-lucide-send"
+            label="Ajukan Perubahan"
+            color="primary"
+            variant="soft"
+            @click="showPengajuanModal = true"
+          />
           <UButton v-if="isHrd" :to="`/barang/${id}/edit`" icon="i-lucide-pencil" label="Edit" />
           <UButton v-if="isHrd" icon="i-lucide-trash-2" color="error" variant="ghost" label="Hapus" @click="showDeleteModal = true" />
         </template>
@@ -113,11 +124,48 @@ async function confirmDelete() {
             <p class="font-medium mt-1">{{ barang.lokasi || '-' }}</p>
           </div>
           <div>
+            <p class="text-sm text-muted">Harga</p>
+            <p class="font-medium mt-1">{{ formatRupiah(barang.harga) }}</p>
+          </div>
+          <div class="sm:col-span-2">
+            <p class="text-sm text-muted">Keterangan</p>
+            <p class="font-medium mt-1 whitespace-pre-wrap">{{ barang.keterangan || '-' }}</p>
+          </div>
+          <div>
             <p class="text-sm text-muted">Ditugaskan ke</p>
             <p v-if="barang.user" class="font-medium mt-1">{{ barang.user.nama }}</p>
             <UBadge v-else class="mt-1" color="neutral" variant="subtle" label="Belum ditugaskan" />
           </div>
         </div>
+      </UCard>
+
+      <UCard v-if="barang.evidence?.length">
+        <template #header>
+          <h3 class="font-semibold">Evidence Gambar</h3>
+        </template>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <a
+            v-for="item in barang.evidence"
+            :key="item.id"
+            :href="item.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group rounded-lg border border-default overflow-hidden hover:border-primary transition-colors"
+          >
+            <img :src="item.url" :alt="item.originalName" class="h-40 w-full object-cover bg-muted/30">
+            <div class="p-3">
+              <p class="text-sm font-medium truncate group-hover:text-primary">{{ item.originalName }}</p>
+              <p class="text-xs text-muted mt-1">Klik untuk lihat ukuran penuh</p>
+            </div>
+          </a>
+        </div>
+      </UCard>
+
+      <UCard v-else-if="isHrd">
+        <template #header>
+          <h3 class="font-semibold">Evidence Gambar</h3>
+        </template>
+        <p class="text-sm text-muted">Belum ada gambar evidence. Tambahkan melalui halaman edit.</p>
       </UCard>
 
       <UCard v-if="isSewa">
@@ -162,6 +210,12 @@ async function confirmDelete() {
         </div>
       </UCard>
 
+      <AppBarangPerbaikanList
+        :barang-id="id"
+        :barang-status="barang.status"
+        :is-hrd="isHrd"
+      />
+
       <AppHistoryTimeline
         :entity-type="ENTITY_TYPES.BARANG"
         :entity-id="id"
@@ -182,5 +236,12 @@ async function confirmDelete() {
         </div>
       </template>
     </UModal>
+
+    <BarangPengajuanModal
+      v-if="barang"
+      v-model:open="showPengajuanModal"
+      :barang-id="id"
+      :barang-status="barang.status"
+    />
   </AppDashboardPanel>
 </template>

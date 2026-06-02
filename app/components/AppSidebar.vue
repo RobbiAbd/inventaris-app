@@ -25,6 +25,11 @@ const menuItems = computed(() => {
       label: 'Riwayat',
       icon: 'i-lucide-history',
       to: '/riwayat'
+    },
+    {
+      label: 'Pengajuan',
+      icon: 'i-lucide-clipboard-list',
+      to: '/pengajuan'
     }
   ]
 
@@ -93,9 +98,19 @@ const menuItems = computed(() => {
           :square="collapsed"
         />
         <div v-if="!collapsed" class="px-2 py-2 rounded-lg bg-muted/50">
-          <p class="text-sm font-medium truncate">{{ user?.nama }}</p>
-          <p class="text-xs text-muted truncate">{{ user?.role }}</p>
+          <NuxtLink to="/profil" class="block hover:opacity-80 transition-opacity">
+            <p class="text-sm font-medium truncate">{{ user?.nama }}</p>
+            <p class="text-xs text-muted truncate">{{ user?.role }} · Profil</p>
+          </NuxtLink>
         </div>
+        <UButton
+          v-else
+          to="/profil"
+          color="neutral"
+          variant="ghost"
+          icon="i-lucide-user"
+          block
+        />
         <UButton
           color="neutral"
           variant="ghost"

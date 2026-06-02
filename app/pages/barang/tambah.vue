@@ -1,22 +1,23 @@
 <script setup lang="ts">
-import type { BarangInput } from '../../../shared/types/barang'
+import type { BarangSubmitPayload } from '../../../shared/types/barang'
 
 definePageMeta({
   layout: 'default',
   middleware: 'hrd'
 })
 
-const { createBarang } = useBarang()
+const { createBarang, syncBarangEvidence } = useBarang()
 const toast = useToast()
 const loading = ref(false)
 
 useSeoMeta({ title: 'Tambah Barang - Inventaris App' })
 
-async function onSubmit(data: BarangInput) {
+async function onSubmit(payload: BarangSubmitPayload) {
   loading.value = true
 
   try {
-    await createBarang(data)
+    const response = await createBarang(payload.data)
+    await syncBarangEvidence(response.data.id, payload)
     toast.add({
       title: 'Berhasil',
       description: 'Barang baru berhasil ditambahkan',

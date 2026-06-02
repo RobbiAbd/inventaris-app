@@ -1,4 +1,4 @@
-import type { BarangInput, BarangItem } from '../../shared/types/barang'
+import type { BarangInput, BarangItem, BarangSubmitPayload } from '../../shared/types/barang'
 
 interface BarangListResponse {
   success: boolean
@@ -53,6 +53,32 @@ export function useBarang() {
     return $fetch('/api/barang/' + id, { method: 'DELETE' })
   }
 
+  async function uploadBarangEvidence(barangId: number, files: File[]) {
+    const formData = new FormData()
+    files.forEach(file => formData.append('files', file))
+    return $fetch<{ success: boolean, data: BarangItem['evidence'] }>(
+      `/api/barang/${barangId}/evidence`,
+      { method: 'POST', body: formData }
+    )
+  }
+
+  async function deleteBarangEvidence(barangId: number, evidenceId: number) {
+    return $fetch(`/api/barang/${barangId}/evidence/${evidenceId}`, { method: 'DELETE' })
+  }
+
+  async function syncBarangEvidence(
+    barangId: number,
+    payload: Pick<BarangSubmitPayload, 'newEvidenceFiles' | 'removeEvidenceIds'>
+  ) {
+    for (const evidenceId of payload.removeEvidenceIds ?? []) {
+      await deleteBarangEvidence(barangId, evidenceId)
+    }
+
+    if (payload.newEvidenceFiles?.length) {
+      await uploadBarangEvidence(barangId, payload.newEvidenceFiles)
+    }
+  }
+
   async function fetchUsers() {
     return $fetch<{
       success: boolean
@@ -68,6 +94,9 @@ export function useBarang() {
     createBarang,
     updateBarang,
     deleteBarang,
+    uploadBarangEvidence,
+    deleteBarangEvidence,
+    syncBarangEvidence,
     fetchUsers
   }
 }

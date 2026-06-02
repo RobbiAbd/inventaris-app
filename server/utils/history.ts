@@ -6,6 +6,7 @@ import type { MasterGroup } from '../../shared/types/master'
 import { roleLabels } from '../../shared/types/user'
 import type { UserRole } from '../../shared/types/user'
 import { prisma } from './db'
+import { formatRupiah } from '../../shared/utils/currency'
 
 type Actor = { id: number, nama: string }
 
@@ -140,6 +141,8 @@ class HistoryFormatter {
       case 'tanggalMulaiSewa':
       case 'tanggalAkhirSewa':
         return formatDate(value as Date | string | null)
+      case 'harga':
+        return value == null ? null : formatRupiah(value as string | number)
       default:
         return normalize(value)
     }
@@ -201,6 +204,8 @@ const BARANG_FIELDS: FieldConfig[] = [
   { key: 'tanggalMulaiSewa', label: 'Tanggal Mulai Sewa' },
   { key: 'tanggalAkhirSewa', label: 'Tanggal Akhir Sewa' },
   { key: 'lokasi', label: 'Lokasi' },
+  { key: 'harga', label: 'Harga' },
+  { key: 'keterangan', label: 'Keterangan' },
   { key: 'userId', label: 'Ditugaskan ke' },
   { key: 'vendorId', label: 'Vendor' }
 ]

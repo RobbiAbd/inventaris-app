@@ -8,13 +8,13 @@ import type { UserRole } from '../../../shared/types/user'
 import { getMasterLabel, MASTER_GROUPS } from '../../../shared/types/master'
 import { prisma } from '../db'
 import { barangScopeForUser, requireHrd, requireSession } from '../auth'
-import { barangInclude, serializeBarang } from '../barang'
+import { barangListInclude, serializeBarang } from '../barang'
 import { serializeVendor } from '../vendor'
 import { serializeUser } from '../user'
 import { serializeActivityLog } from '../history'
 import { activeBarangCountSelect, notDeleted } from '../softDelete'
 import { getMasterOptionsMap } from '../master'
-import { formatReportDate, formatReportDateTime } from './format'
+import { formatReportDate, formatReportDateTime, formatReportRupiah } from './format'
 
 const MAX_ROWS = 5000
 
@@ -72,13 +72,16 @@ async function buildBarangTable(
 
   const items = await prisma.barang.findMany({
     where,
-    include: barangInclude,
+    include: {
+      ...barangListInclude,
+      _count: { select: { evidence: true } }
+    },
     orderBy: { updatedAt: 'desc' },
     take: MAX_ROWS
   })
 
   const rows = items.map((item, index) => {
-    const barang = serializeBarang(item)
+    const barang = serializeBarang({ ...item, evidence: [] })
     return [
       String(index + 1),
       barang.nama,
@@ -87,7 +90,10 @@ async function buildBarangTable(
       barang.nomorSeri ?? '-',
       getMasterLabel(masterMap[MASTER_GROUPS.STATUS_BARANG], barang.status),
       getMasterLabel(masterMap[MASTER_GROUPS.TIPE_PEROLEHAN], barang.tipePerolehan),
+      formatReportRupiah(barang.harga),
       barang.lokasi ?? '-',
+      barang.keterangan ?? '-',
+      String(item._count.evidence),
       barang.vendor?.nama ?? '-',
       barang.user?.nama ?? '-',
       formatReportDate(barang.tanggalPembelian ?? barang.tanggalMulaiSewa),
@@ -106,7 +112,10 @@ async function buildBarangTable(
       'Nomor Seri',
       'Status',
       'Perolehan',
+      'Harga',
       'Lokasi',
+      'Keterangan',
+      'Jumlah Evidence',
       'Vendor',
       'Ditugaskan ke',
       'Tgl Pembelian/Sewa',

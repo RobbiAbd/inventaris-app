@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { FILTER_ALL, toFilterValue } from '../../../shared/constants/filter'
 import { DEFAULT_PAGE_SIZE } from '../../../shared/types/pagination'
+import { formatRupiah } from '../../../shared/utils/currency'
 
 definePageMeta({ layout: 'default' })
 
@@ -65,6 +66,7 @@ const exportFilters = computed(() => ({
 const columns = [
   { accessorKey: 'nama', header: 'Nama' },
   { accessorKey: 'kategori', header: 'Kategori' },
+  { accessorKey: 'harga', header: 'Harga' },
   { accessorKey: 'tipePerolehan', header: 'Perolehan' },
   { accessorKey: 'status', header: 'Status' },
   { accessorKey: 'vendor', header: 'Vendor' },
@@ -108,6 +110,12 @@ const columns = [
           <UTable :data="items" :columns="columns" class="w-full">
             <template #kategori-cell="{ row }">
               {{ labelFor(MASTER_GROUPS.KATEGORI_BARANG, row.original.kategori) }}
+            </template>
+
+            <template #harga-cell="{ row }">
+              <span :class="{ 'text-muted': !row.original.harga }">
+                {{ formatRupiah(row.original.harga) }}
+              </span>
             </template>
 
             <template #tipePerolehan-cell="{ row }">
