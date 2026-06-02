@@ -44,6 +44,11 @@ function applyFilters() {
   refresh()
 }
 
+const exportFilters = computed(() => ({
+  search: search.value || undefined,
+  role: toFilterValue(role.value)
+}))
+
 function roleLabel(roleValue: string) {
   return roleLabels[roleValue as UserRole] ?? roleValue
 }
@@ -88,7 +93,10 @@ async function confirmDelete() {
     <template #header>
       <UDashboardNavbar title="Pengguna">
         <template #right>
-          <UButton to="/pengguna/tambah" icon="i-lucide-plus" label="Tambah Pengguna" />
+          <div class="flex items-center gap-2">
+            <AppReportDownload report-type="pengguna" :filters="exportFilters" />
+            <UButton to="/pengguna/tambah" icon="i-lucide-plus" label="Tambah Pengguna" />
+          </div>
         </template>
       </UDashboardNavbar>
     </template>

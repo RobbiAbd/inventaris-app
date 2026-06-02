@@ -20,6 +20,10 @@ const entityFilterItems = computed(() => [
 
 const filteredEntityType = computed(() => toFilterValue(appliedEntityType.value) as EntityType | undefined)
 
+const exportFilters = computed(() => ({
+  entityType: filteredEntityType.value
+}))
+
 function applyFilters() {
   appliedEntityType.value = entityType.value
 }
@@ -28,7 +32,11 @@ function applyFilters() {
 <template>
   <AppDashboardPanel>
     <template #header>
-      <UDashboardNavbar title="Riwayat Aktivitas" />
+      <UDashboardNavbar title="Riwayat Aktivitas">
+        <template #right>
+          <AppReportDownload report-type="riwayat" :filters="exportFilters" />
+        </template>
+      </UDashboardNavbar>
     </template>
 
     <div class="space-y-4">

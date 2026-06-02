@@ -56,6 +56,12 @@ function applyFilters() {
   refresh()
 }
 
+const exportFilters = computed(() => ({
+  search: search.value || undefined,
+  kategori: toFilterValue(kategori.value),
+  status: toFilterValue(status.value)
+}))
+
 const columns = [
   { accessorKey: 'nama', header: 'Nama' },
   { accessorKey: 'kategori', header: 'Kategori' },
@@ -72,7 +78,10 @@ const columns = [
     <template #header>
       <UDashboardNavbar title="Daftar Barang">
         <template #right>
-          <UButton v-if="isHrd" to="/barang/tambah" icon="i-lucide-plus" label="Tambah Barang" />
+          <div class="flex items-center gap-2">
+            <AppReportDownload report-type="barang" :filters="exportFilters" />
+            <UButton v-if="isHrd" to="/barang/tambah" icon="i-lucide-plus" label="Tambah Barang" />
+          </div>
         </template>
       </UDashboardNavbar>
     </template>

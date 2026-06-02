@@ -44,6 +44,11 @@ function applyFilters() {
   refresh()
 }
 
+const exportFilters = computed(() => ({
+  search: search.value || undefined,
+  jenis: toFilterValue(jenis.value)
+}))
+
 function openDelete(vendor: { id: number, nama: string }) {
   vendorToDelete.value = vendor
   showDeleteModal.value = true
@@ -76,7 +81,10 @@ async function confirmDelete() {
     <template #header>
       <UDashboardNavbar title="Vendor">
         <template #right>
-          <UButton v-if="isHrd" to="/vendor/tambah" icon="i-lucide-plus" label="Tambah Vendor" />
+          <div class="flex items-center gap-2">
+            <AppReportDownload report-type="vendor" :filters="exportFilters" />
+            <UButton v-if="isHrd" to="/vendor/tambah" icon="i-lucide-plus" label="Tambah Vendor" />
+          </div>
         </template>
       </UDashboardNavbar>
     </template>
